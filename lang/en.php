@@ -1,0 +1,138 @@
+<?php
+/**
+ * English Language File
+ */
+
+return [
+    // Common
+    'save' => 'Save',
+    'cancel' => 'Cancel',
+    'delete' => 'Delete',
+    'edit' => 'Edit',
+    'view' => 'View',
+    'create' => 'Create',
+    'update' => 'Update',
+    'search' => 'Search',
+    'filter' => 'Filter',
+    'export' => 'Export',
+    'import' => 'Import',
+    'print' => 'Print',
+    'download' => 'Download',
+    'upload' => 'Upload',
+    'yes' => 'Yes',
+    'no' => 'No',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'status' => 'Status',
+    'actions' => 'Actions',
+    'loading' => 'Loading...',
+    'success' => 'Success',
+    'error' => 'Error',
+    'warning' => 'Warning',
+    'info' => 'Information',
+    
+    // Navigation
+    'dashboard' => 'Dashboard',
+    'employees' => 'Employees',
+    'payroll' => 'Payroll',
+    'reports' => 'Reports',
+    'masters' => 'Masters',
+    'settings' => 'Settings',
+    'logout' => 'Logout',
+    'profile' => 'Profile',
+    
+    // Employee Management
+    'employee_code' => 'Employee Code',
+    'first_name' => 'First Name',
+    'last_name' => 'Last Name',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'date_of_birth' => 'Date of Birth',
+    'gender' => 'Gender',
+    'address' => 'Address',
+    'join_date' => 'Join Date',
+    'department' => 'Department',
+    'designation' => 'Designation',
+    'salary_structure' => 'Salary Structure',
+    'pan_number' => 'PAN Number',
+    'aadhaar_number' => 'Aadhaar Number',
+    'uan_number' => 'UAN Number',
+    'pf_number' => 'PF Number',
+    'esi_number' => 'ESI Number',
+    'bank_account' => 'Bank Account',
+    'bank_name' => 'Bank Name',
+    'bank_ifsc' => 'IFSC Code',
+    
+    // Payroll
+    'basic_salary' => 'Basic Salary',
+    'hra' => 'House Rent Allowance',
+    'transport_allowance' => 'Transport Allowance',
+    'medical_allowance' => 'Medical Allowance',
+    'provident_fund' => 'Provident Fund',
+    'esi_contribution' => 'ESI Contribution',
+    'professional_tax' => 'Professional Tax',
+    'income_tax' => 'Income Tax (TDS)',
+    'gross_salary' => 'Gross Salary',
+    'total_deductions' => 'Total Deductions',
+    'net_salary' => 'Net Salary',
+    'payslip' => 'Payslip',
+    'salary_register' => 'Salary Register',
+    
+    // Messages
+    'record_saved' => 'Record saved successfully',
+    'record_updated' => 'Record updated successfully',
+    'record_deleted' => 'Record deleted successfully',
+    'operation_failed' => 'Operation failed',
+    'invalid_data' => 'Invalid data provided',
+    'access_denied' => 'Access denied',
+    'session_expired' => 'Session expired',
+    'file_uploaded' => 'File uploaded successfully',
+    'export_completed' => 'Export completed successfully',
+    
+    // Validation
+    'field_required' => 'This field is required',
+    'invalid_email' => 'Please enter a valid email address',
+    'invalid_date' => 'Please enter a valid date',
+    'invalid_number' => 'Please enter a valid number',
+    'password_mismatch' => 'Passwords do not match',
+    'file_too_large' => 'File size is too large',
+    'invalid_file_type' => 'Invalid file type',
+    
+    // Reports
+    'generate_report' => 'Generate Report',
+    'select_period' => 'Select Period',
+    'select_department' => 'Select Department',
+    'select_format' => 'Select Format',
+    'report_generated' => 'Report generated successfully',
+    'no_data_found' => 'No data found for the selected criteria',
+    
+    // Dashboard
+    'total_employees' => 'Total Employees',
+    'active_employees' => 'Active Employees',
+    'current_period' => 'Current Period',
+    'net_payable' => 'Net Payable',
+    'recent_activities' => 'Recent Activities',
+    'quick_actions' => 'Quick Actions',
+    
+    // Time
+    'today' => 'Today',
+    'yesterday' => 'Yesterday',
+    'this_week' => 'This Week',
+    'this_month' => 'This Month',
+    'last_month' => 'Last Month',
+    'this_year' => 'This Year',
+    
+    // Months
+    'january' => 'January',
+    'february' => 'February',
+    'march' => 'March',
+    'april' => 'April',
+    'may' => 'May',
+    'june' => 'June',
+    'july' => 'July',
+    'august' => 'August',
+    'september' => 'September',
+    'october' => 'October',
+    'november' => 'November',
+    'december' => 'December',
+];
