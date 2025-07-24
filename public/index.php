@@ -98,25 +98,77 @@ $router->addRoute('GET', '/employees/export', 'Employee', 'export');
 // Payroll routes
 $router->addRoute('GET', '/payroll', 'Payroll', 'index');
 $router->addRoute('GET', '/payroll/periods', 'Payroll', 'periods');
+$router->addRoute('POST', '/payroll/periods', 'Payroll', 'periods');
 $router->addRoute('GET', '/payroll/process', 'Payroll', 'process');
 $router->addRoute('POST', '/payroll/process', 'Payroll', 'process');
+$router->addRoute('POST', '/payroll/bulk-process', 'Payroll', 'bulkProcess');
+$router->addRoute('POST', '/payroll/lock-period', 'Payroll', 'lockPeriod');
 $router->addRoute('GET', '/payroll/payslip/{employeeId}/{periodId}', 'Payroll', 'payslip');
+$router->addRoute('GET', '/payroll/export-payslips', 'Payroll', 'exportPayslips');
 
+// Attendance routes
+$router->addRoute('GET', '/attendance', 'Attendance', 'index');
+$router->addRoute('GET', '/attendance/mark', 'Attendance', 'mark');
+$router->addRoute('POST', '/attendance/mark', 'Attendance', 'mark');
+$router->addRoute('GET', '/attendance/bulk-mark', 'Attendance', 'bulkMark');
+$router->addRoute('POST', '/attendance/bulk-mark', 'Attendance', 'bulkMark');
+$router->addRoute('GET', '/attendance/import', 'Attendance', 'import');
+$router->addRoute('POST', '/attendance/import', 'Attendance', 'import');
+$router->addRoute('GET', '/attendance/export', 'Attendance', 'export');
+
+// Loan routes
+$router->addRoute('GET', '/loans', 'Loan', 'index');
+$router->addRoute('GET', '/loans/create', 'Loan', 'create');
+$router->addRoute('POST', '/loans/create', 'Loan', 'create');
+$router->addRoute('GET', '/loans/{id}', 'Loan', 'view');
+$router->addRoute('GET', '/loans/{id}/edit', 'Loan', 'edit');
+$router->addRoute('POST', '/loans/{id}/edit', 'Loan', 'edit');
+$router->addRoute('POST', '/loans/{id}/close', 'Loan', 'close');
+$router->addRoute('POST', '/loans/calculate-emi', 'Loan', 'calculateEMI');
+
+// Tax routes
+$router->addRoute('GET', '/tax', 'Tax', 'index');
+$router->addRoute('GET', '/tax/slabs', 'Tax', 'slabs');
+$router->addRoute('POST', '/tax/slabs', 'Tax', 'slabs');
+$router->addRoute('GET', '/tax/calculate', 'Tax', 'calculate');
+$router->addRoute('POST', '/tax/calculate', 'Tax', 'calculate');
+$router->addRoute('GET', '/tax/declarations', 'Tax', 'declarations');
+$router->addRoute('POST', '/tax/declarations', 'Tax', 'declarations');
+$router->addRoute('GET', '/tax/form16', 'Tax', 'form16');
 // Master data routes
 $router->addRoute('GET', '/departments', 'Department', 'index');
+$router->addRoute('POST', '/departments', 'Department', 'index');
 $router->addRoute('GET', '/designations', 'Designation', 'index');
+$router->addRoute('POST', '/designations', 'Designation', 'index');
 $router->addRoute('GET', '/salary-components', 'SalaryComponent', 'index');
+$router->addRoute('POST', '/salary-components', 'SalaryComponent', 'index');
 $router->addRoute('GET', '/loan-types', 'LoanType', 'index');
+$router->addRoute('POST', '/loan-types', 'LoanType', 'index');
 $router->addRoute('GET', '/leave-types', 'LeaveType', 'index');
+$router->addRoute('POST', '/leave-types', 'LeaveType', 'index');
 $router->addRoute('GET', '/holidays', 'Holiday', 'index');
+$router->addRoute('POST', '/holidays', 'Holiday', 'index');
 
 // Report routes
 $router->addRoute('GET', '/reports', 'Report', 'index');
 $router->addRoute('GET', '/reports/salary-register', 'Report', 'salaryRegister');
-$router->addRoute('GET', '/reports/payslip', 'Report', 'payslip');
+$router->addRoute('POST', '/reports/salary-register', 'Report', 'salaryRegister');
+$router->addRoute('GET', '/reports/component-report', 'Report', 'componentReport');
+$router->addRoute('POST', '/reports/component-report', 'Report', 'componentReport');
+$router->addRoute('GET', '/reports/bank-transfer', 'Report', 'bankTransfer');
+$router->addRoute('POST', '/reports/bank-transfer', 'Report', 'bankTransfer');
+$router->addRoute('GET', '/reports/tax-report', 'Report', 'taxReport');
+$router->addRoute('POST', '/reports/tax-report', 'Report', 'taxReport');
+$router->addRoute('GET', '/reports/loan-report', 'Report', 'loanReport');
+$router->addRoute('POST', '/reports/loan-report', 'Report', 'loanReport');
+$router->addRoute('GET', '/reports/attendance-report', 'Report', 'attendanceReport');
+$router->addRoute('POST', '/reports/attendance-report', 'Report', 'attendanceReport');
+$router->addRoute('GET', '/reports/custom-builder', 'Report', 'customBuilder');
+$router->addRoute('POST', '/reports/custom-builder', 'Report', 'customBuilder');
 
 // API routes for AJAX calls
 $router->addRoute('GET', '/api/dashboard-widgets', 'Dashboard', 'getWidgetData');
+$router->addRoute('GET', '/api/current-period', 'Dashboard', 'getCurrentPeriod');
 
 // Static file serving (for development)
 $requestUri = $_SERVER['REQUEST_URI'];

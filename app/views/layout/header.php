@@ -56,6 +56,16 @@
                             Payroll
                         </a>
                         
+                        <a href="/attendance" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/attendance') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-calendar-check mr-2"></i>
+                            Attendance
+                        </a>
+                        
+                        <a href="/loans" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/loans') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-hand-holding-usd mr-2"></i>
+                            Loans
+                        </a>
+                        
                         <a href="/reports" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/reports') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             <i class="fas fa-chart-bar mr-2"></i>
                             Reports
@@ -78,6 +88,9 @@
                                     <a href="/loan-types" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Loan Types</a>
                                     <a href="/leave-types" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Leave Types</a>
                                     <a href="/holidays" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Holidays</a>
+                                    <div class="border-t border-gray-100"></div>
+                                    <a href="/tax/slabs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Tax Slabs</a>
+                                    <a href="/tax/calculator" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Tax Calculator</a>
                                 </div>
                             </div>
                         </div>
@@ -125,6 +138,8 @@
                 <a href="/dashboard" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Dashboard</a>
                 <a href="/employees" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Employees</a>
                 <a href="/payroll" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Payroll</a>
+                <a href="/attendance" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Attendance</a>
+                <a href="/loans" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Loans</a>
                 <a href="/reports" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Reports</a>
             </div>
         </div>
