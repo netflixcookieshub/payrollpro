@@ -3,6 +3,12 @@
  * Front Controller - Entry point for the application
  */
 
+// Check if system is installed
+if (!file_exists(__DIR__ . '/../.installed') && !str_contains($_SERVER['REQUEST_URI'], '/setup')) {
+    header('Location: /setup');
+    exit;
+}
+
 session_start();
 
 // Load configuration
@@ -72,6 +78,15 @@ $router = new Router();
 // Define routes
 $router->addRoute('GET', '/', 'Dashboard', 'index');
 $router->addRoute('GET', '/dashboard', 'Dashboard', 'index');
+
+// Setup routes
+$router->addRoute('GET', '/setup', 'Setup', 'index');
+$router->addRoute('GET', '/setup/install', 'Setup', 'install');
+$router->addRoute('POST', '/setup/install', 'Setup', 'install');
+$router->addRoute('POST', '/setup/database', 'Setup', 'database');
+$router->addRoute('POST', '/setup/migrate', 'Setup', 'migrate');
+$router->addRoute('POST', '/setup/seed', 'Setup', 'seed');
+$router->addRoute('POST', '/setup/complete', 'Setup', 'complete');
 
 // Authentication routes
 $router->addRoute('GET', '/login', 'Auth', 'login');
@@ -181,6 +196,31 @@ $router->addRoute('POST', '/formula-editor/save-query', 'FormulaEditor', 'saveQu
 $router->addRoute('GET', '/formula-editor/query-history', 'FormulaEditor', 'getQueryHistory');
 
 // API routes for AJAX calls
+$router->addRoute('GET', '/integrations', 'Integration', 'index');
+$router->addRoute('GET', '/integrations/configure/{integration}', 'Integration', 'configure');
+$router->addRoute('POST', '/integrations/configure/{integration}', 'Integration', 'configure');
+$router->addRoute('POST', '/integrations/test/{integration}', 'Integration', 'test');
+$router->addRoute('POST', '/integrations/sync/{integration}', 'Integration', 'sync');
+$router->addRoute('POST', '/integrations/webhook/{integration}', 'Integration', 'webhook');
+$router->addRoute('GET', '/integrations/export-data', 'Integration', 'exportData');
+$router->addRoute('GET', '/integrations/import', 'Integration', 'importData');
+$router->addRoute('POST', '/integrations/import', 'Integration', 'importData');
+$router->addRoute('GET', '/integrations/api-keys', 'Integration', 'apiKeys');
+$router->addRoute('POST', '/integrations/api-keys', 'Integration', 'apiKeys');
+
+// API v1 routes
+$router->addRoute('GET', '/api/v1/employees', 'ApiV1', 'employees');
+$router->addRoute('POST', '/api/v1/employees', 'ApiV1', 'employees');
+$router->addRoute('GET', '/api/v1/employees/{id}', 'ApiV1', 'employee');
+$router->addRoute('PUT', '/api/v1/employees/{id}', 'ApiV1', 'employee');
+$router->addRoute('DELETE', '/api/v1/employees/{id}', 'ApiV1', 'employee');
+$router->addRoute('GET', '/api/v1/attendance', 'ApiV1', 'attendance');
+$router->addRoute('POST', '/api/v1/attendance', 'ApiV1', 'attendance');
+$router->addRoute('GET', '/api/v1/payroll', 'ApiV1', 'payroll');
+$router->addRoute('POST', '/api/v1/payroll', 'ApiV1', 'payroll');
+$router->addRoute('GET', '/api/v1/salary-structure/{employeeId}', 'ApiV1', 'salaryStructure');
+$router->addRoute('POST', '/api/v1/salary-structure/{employeeId}', 'ApiV1', 'salaryStructure');
+
 $router->addRoute('GET', '/api/attendance-summary', 'Api', 'attendanceSummary');
 $router->addRoute('GET', '/api/current-period', 'Api', 'currentPeriod');
 $router->addRoute('GET', '/api/employee-search', 'Api', 'employeeSearch');

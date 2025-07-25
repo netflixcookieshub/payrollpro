@@ -78,6 +78,13 @@
                         </a>
                         <?php endif; ?>
                         
+                        <?php if (isset($_SESSION['permissions']) && (str_contains($_SESSION['permissions'], 'admin') || $_SESSION['permissions'] === 'all')): ?>
+                        <a href="/integrations" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/integrations') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-plug mr-2"></i>
+                            Integrations
+                        </a>
+                        <?php endif; ?>
+                        
                         <!-- Masters Dropdown -->
                         <div class="relative inline-block text-left">
                             <button type="button" class="nav-link border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" onclick="toggleDropdown('masters-dropdown')">
