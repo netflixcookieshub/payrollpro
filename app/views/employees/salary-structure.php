@@ -205,6 +205,26 @@ include __DIR__ . '/../layout/header.php';
                             <p id="net-salary" class="text-2xl font-bold text-blue-600">₹0.00</p>
                         </div>
                     </div>
+                    
+                    <!-- Formula Validation -->
+                    <div class="mt-6 border-t pt-4">
+                        <h5 class="text-sm font-semibold text-gray-900 mb-2">Formula Validation</h5>
+                        <div id="formula-validation" class="text-sm text-gray-600">
+                            All formulas will be validated when you save the structure.
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-4 flex items-center justify-between">
+                        <button type="button" onclick="validateFormulas()" class="btn btn-outline btn-sm">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Validate Formulas
+                        </button>
+                        <button type="button" onclick="previewCalculation()" class="btn btn-outline btn-sm">
+                            <i class="fas fa-calculator mr-2"></i>
+                            Preview Calculation
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -247,6 +267,128 @@ function calculateTotals() {
     document.getElementById('total-earnings').textContent = '₹' + totalEarnings.toLocaleString('en-IN', {minimumFractionDigits: 2});
     document.getElementById('total-deductions').textContent = '₹' + totalDeductions.toLocaleString('en-IN', {minimumFractionDigits: 2});
     document.getElementById('net-salary').textContent = '₹' + netSalary.toLocaleString('en-IN', {minimumFractionDigits: 2});
+}
+
+// Validate formulas
+function validateFormulas() {
+    showLoading();
+    
+    const formulas = [];
+    document.querySelectorAll('[data-formula]').forEach(element => {
+        const formula = element.dataset.formula;
+        if (formula) {
+            formulas.push({
+                component: element.dataset.component,
+                formula: formula
+            });
+        }
+    });
+    
+    fetch('/api/validate-formulas', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            formulas: formulas,
+            csrf_token: '<?php echo $csrf_token; ?>'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            document.getElementById('formula-validation').innerHTML = 
+                '<span class="text-green-600"><i class="fas fa-check-circle mr-1"></i>All formulas are valid</span>';
+        } else {
+            document.getElementById('formula-validation').innerHTML = 
+                '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>' + data.message + '</span>';
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        console.error('Error:', error);
+        showMessage('Error validating formulas', 'error');
+    });
+}
+
+// Preview calculation
+function previewCalculation() {
+    const components = {};
+    document.querySelectorAll('input[name^="components["]').forEach(input => {
+        const componentId = input.name.match(/\[(\d+)\]/)[1];
+        const amount = parseFloat(input.value) || 0;
+        if (amount > 0) {
+            components[componentId] = amount;
+        }
+    });
+    
+    if (Object.keys(components).length === 0) {
+        showMessage('Please enter at least one component amount', 'warning');
+        return;
+    }
+    
+    showLoading();
+    
+    fetch('/api/preview-salary-calculation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            employee_id: <?php echo $employee['id']; ?>,
+            components: components,
+            csrf_token: '<?php echo $csrf_token; ?>'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showCalculationPreview(data.calculation);
+        } else {
+            showMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        console.error('Error:', error);
+        showMessage('Error previewing calculation', 'error');
+    });
+}
+
+function showCalculationPreview(calculation) {
+    // Create modal or update existing display with calculation details
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Salary Calculation Preview</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span>Gross Earnings:</span>
+                        <span class="font-medium">₹${calculation.gross_earnings.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Total Deductions:</span>
+                        <span class="font-medium">₹${calculation.total_deductions.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                    </div>
+                    <div class="flex justify-between border-t pt-2 font-semibold">
+                        <span>Net Salary:</span>
+                        <span>₹${calculation.net_salary.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button onclick="this.closest('.fixed').remove()" class="btn btn-primary">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
 }
 
 // Add event listeners to all amount inputs

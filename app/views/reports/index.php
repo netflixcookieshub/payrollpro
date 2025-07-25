@@ -125,6 +125,16 @@ include __DIR__ . '/../layout/header.php';
                     </div>
                 </a>
                 
+                <a href="/loans" class="block p-3 rounded-md hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Loan Management</h4>
+                            <p class="text-xs text-gray-500">Employee loans and EMIs</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </a>
+                
                 <a href="/employees/export" class="block p-3 rounded-md hover:bg-gray-50 transition-colors duration-200">
                     <div class="flex items-center justify-between">
                         <div>
