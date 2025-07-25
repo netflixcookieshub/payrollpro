@@ -11,34 +11,18 @@ class AttendanceController extends Controller {
         $this->checkAuth();
         $this->checkPermission('employees');
         
-        $month = $_GET['month'] ?? date('Y-m');
+        $date = $_GET['date'] ?? date('Y-m-d');
         $departmentId = $_GET['department'] ?? '';
         
         $attendanceModel = $this->loadModel('Attendance');
-        $employeeModel = $this->loadModel('Employee');
+        $attendance = $attendanceModel->getAttendanceByDate($date, $departmentId);
         
-        // Get employees for the selected department
-        $conditions = "status = 'active'";
-        $params = [];
-        
-        if (!empty($departmentId)) {
-            $conditions .= " AND department_id = :dept_id";
-            $params['dept_id'] = $departmentId;
-        }
-        
-        $employees = $employeeModel->findAll($conditions, $params, 'emp_code ASC');
-        
-        // Get attendance data for the month
-        $attendanceData = $attendanceModel->getMonthlyAttendance($month, $departmentId);
-        
-        // Get departments for filter
         $departments = $this->db->fetchAll("SELECT * FROM departments WHERE status = 'active' ORDER BY name ASC");
         
         $this->loadView('attendance/index', [
-            'employees' => $employees,
-            'attendance_data' => $attendanceData,
+            'attendance' => $attendance,
             'departments' => $departments,
-            'selected_month' => $month,
+            'selected_date' => $date,
             'selected_department' => $departmentId
         ]);
     }
@@ -60,47 +44,22 @@ class AttendanceController extends Controller {
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->handleBulkMarkAttendance();
-        } else {
-            $this->showBulkMarkForm();
         }
     }
     
-    public function import() {
+    public function report() {
         $this->checkAuth();
-        $this->checkPermission('employees');
+        $this->checkPermission('reports');
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->handleImportAttendance();
+            $this->generateAttendanceReport();
         } else {
-            $this->showImportForm();
-        }
-    }
-    
-    public function export() {
-        $this->checkAuth();
-        $this->checkPermission('employees');
-        
-        $month = $_GET['month'] ?? date('Y-m');
-        $departmentId = $_GET['department'] ?? '';
-        $format = $_GET['format'] ?? 'excel';
-        
-        $attendanceModel = $this->loadModel('Attendance');
-        $data = $attendanceModel->getAttendanceReport($month, $departmentId);
-        
-        if ($format === 'excel') {
-            $this->exportToExcel($data, "attendance_report_{$month}.xlsx", 'Attendance Report');
-        } else {
-            $this->exportToCSV($data, "attendance_report_{$month}.csv");
+            $this->showAttendanceReportForm();
         }
     }
     
     private function handleMarkAttendance() {
-        $employeeId = $_POST['employee_id'] ?? '';
-        $attendanceDate = $_POST['attendance_date'] ?? '';
-        $status = $_POST['status'] ?? 'present';
-        $checkIn = $_POST['check_in'] ?? '';
-        $checkOut = $_POST['check_out'] ?? '';
-        $remarks = $_POST['remarks'] ?? '';
+        $data = $this->sanitizeInput($_POST);
         $csrfToken = $_POST['csrf_token'] ?? '';
         
         if (!$this->validateCSRFToken($csrfToken)) {
@@ -108,32 +67,7 @@ class AttendanceController extends Controller {
             return;
         }
         
-        if (empty($employeeId) || empty($attendanceDate)) {
-            $this->jsonResponse(['success' => false, 'message' => 'Employee and date are required'], 400);
-            return;
-        }
-        
         $attendanceModel = $this->loadModel('Attendance');
-        
-        // Calculate total hours if check-in and check-out are provided
-        $totalHours = null;
-        if (!empty($checkIn) && !empty($checkOut)) {
-            $checkInTime = new DateTime($checkIn);
-            $checkOutTime = new DateTime($checkOut);
-            $interval = $checkInTime->diff($checkOutTime);
-            $totalHours = $interval->h + ($interval->i / 60);
-        }
-        
-        $data = [
-            'employee_id' => $employeeId,
-            'attendance_date' => $attendanceDate,
-            'check_in' => !empty($checkIn) ? $checkIn : null,
-            'check_out' => !empty($checkOut) ? $checkOut : null,
-            'total_hours' => $totalHours,
-            'status' => $status,
-            'remarks' => $remarks
-        ];
-        
         $result = $attendanceModel->markAttendance($data);
         
         if ($result['success']) {
@@ -145,8 +79,8 @@ class AttendanceController extends Controller {
     }
     
     private function handleBulkMarkAttendance() {
-        $attendanceDate = $_POST['attendance_date'] ?? '';
         $attendanceData = $_POST['attendance'] ?? [];
+        $date = $_POST['date'] ?? date('Y-m-d');
         $csrfToken = $_POST['csrf_token'] ?? '';
         
         if (!$this->validateCSRFToken($csrfToken)) {
@@ -154,28 +88,25 @@ class AttendanceController extends Controller {
             return;
         }
         
-        if (empty($attendanceDate) || empty($attendanceData)) {
-            $this->jsonResponse(['success' => false, 'message' => 'Date and attendance data are required'], 400);
-            return;
-        }
-        
         $attendanceModel = $this->loadModel('Attendance');
-        $result = $attendanceModel->bulkMarkAttendance($attendanceDate, $attendanceData);
+        $result = $attendanceModel->bulkMarkAttendance($attendanceData, $date);
         
         if ($result['success']) {
             $this->logActivity('bulk_mark_attendance', 'attendance', null);
-            $this->jsonResponse([
-                'success' => true, 
-                'message' => "Attendance marked for {$result['processed']} employees"
-            ]);
+            $this->jsonResponse(['success' => true, 'message' => "Attendance marked for {$result['count']} employees"]);
         } else {
             $this->jsonResponse(['success' => false, 'message' => $result['message']], 400);
         }
     }
     
     private function showMarkAttendanceForm() {
-        $employeeModel = $this->loadModel('Employee');
-        $employees = $employeeModel->getActiveEmployees();
+        $employees = $this->db->fetchAll(
+            "SELECT e.*, d.name as department_name 
+             FROM employees e 
+             JOIN departments d ON e.department_id = d.id 
+             WHERE e.status = 'active' 
+             ORDER BY e.emp_code ASC"
+        );
         
         $this->loadView('attendance/mark', [
             'employees' => $employees,
@@ -183,48 +114,34 @@ class AttendanceController extends Controller {
         ]);
     }
     
-    private function showBulkMarkForm() {
-        $employeeModel = $this->loadModel('Employee');
-        $employees = $employeeModel->getActiveEmployees();
+    private function generateAttendanceReport() {
+        $startDate = $_POST['start_date'] ?? '';
+        $endDate = $_POST['end_date'] ?? '';
+        $departmentId = $_POST['department_id'] ?? '';
+        $format = $_POST['format'] ?? 'excel';
         
-        $departments = $this->db->fetchAll("SELECT * FROM departments WHERE status = 'active' ORDER BY name ASC");
-        
-        $this->loadView('attendance/bulk-mark', [
-            'employees' => $employees,
-            'departments' => $departments,
-            'csrf_token' => $this->generateCSRFToken()
-        ]);
-    }
-    
-    private function showImportForm() {
-        $this->loadView('attendance/import', [
-            'csrf_token' => $this->generateCSRFToken()
-        ]);
-    }
-    
-    private function handleImportAttendance() {
-        if (empty($_FILES['attendance_file']['name'])) {
-            $this->jsonResponse(['success' => false, 'message' => 'Please select a file'], 400);
+        if (empty($startDate) || empty($endDate)) {
+            $this->jsonResponse(['success' => false, 'message' => 'Date range is required'], 400);
             return;
         }
         
-        try {
-            $filePath = $this->uploadFile($_FILES['attendance_file'], 'attendance');
-            $attendanceModel = $this->loadModel('Attendance');
-            $result = $attendanceModel->importFromFile($filePath);
-            
-            if ($result['success']) {
-                $this->logActivity('import_attendance', 'attendance', null);
-                $this->jsonResponse([
-                    'success' => true, 
-                    'message' => "Imported {$result['imported']} attendance records"
-                ]);
-            } else {
-                $this->jsonResponse(['success' => false, 'message' => $result['message']], 400);
-            }
-        } catch (Exception $e) {
-            $this->jsonResponse(['success' => false, 'message' => $e->getMessage()], 400);
+        $attendanceModel = $this->loadModel('Attendance');
+        $data = $attendanceModel->getAttendanceReport($startDate, $endDate, $departmentId);
+        
+        if ($format === 'excel') {
+            $this->exportToExcel($data, 'attendance_report_' . date('Y-m-d') . '.xlsx', 'Attendance Report');
+        } else {
+            $this->exportToCSV($data, 'attendance_report_' . date('Y-m-d') . '.csv');
         }
+    }
+    
+    private function showAttendanceReportForm() {
+        $departments = $this->db->fetchAll("SELECT * FROM departments WHERE status = 'active' ORDER BY name ASC");
+        
+        $this->loadView('attendance/report', [
+            'departments' => $departments,
+            'csrf_token' => $this->generateCSRFToken()
+        ]);
     }
     
     private function exportToExcel($data, $filename, $title = 'Report') {

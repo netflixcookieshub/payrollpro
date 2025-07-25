@@ -75,6 +75,20 @@ A comprehensive, enterprise-grade Payroll Management System built with **Core PH
 - Mobile-friendly interface
 - Modern card-based layouts
 
+### 🕒 Attendance Management
+- Daily attendance tracking
+- Bulk attendance marking
+- Attendance reports and analytics
+- Integration with payroll processing
+- Mobile-friendly attendance interface
+
+### 💳 Enhanced Loan Management
+- Multiple loan types with different terms
+- Automated EMI calculations
+- Payment tracking and history
+- Outstanding balance management
+- Loan performance analytics
+
 ## 🛠️ Technical Architecture
 
 ### Core Technologies
@@ -100,7 +114,7 @@ payroll-system/
 ├── uploads/                # File uploads
 ├── docs/                   # Documentation
 ├── lang/                   # Language files
-├── database.sql           # Database schema
+├── supabase/migrations/   # Database migrations
 └── README.md              # This file
 ```
 

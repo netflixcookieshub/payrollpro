@@ -1,5 +1,5 @@
 <?php 
-$title = 'Loan Management - Payroll System';
+$title = 'Loan Management - Payroll Management System';
 include __DIR__ . '/../layout/header.php'; 
 ?>
 
@@ -9,7 +9,7 @@ include __DIR__ . '/../layout/header.php';
         <div class="flex-1 min-w-0">
             <h1 class="text-3xl font-bold text-gray-900">Loan Management</h1>
             <p class="mt-1 text-sm text-gray-500">
-                Manage employee loans, EMIs, and repayment tracking
+                Manage employee loans, EMIs, and payment tracking
             </p>
         </div>
         <div class="mt-4 flex md:mt-0 md:ml-4">
@@ -20,47 +20,22 @@ include __DIR__ . '/../layout/header.php';
         </div>
     </div>
 
-    <!-- Search and Filter -->
-    <div class="bg-white shadow-sm rounded-lg border border-gray-200 mb-6">
-        <div class="p-6">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                    <input type="text" name="search" id="search" value="<?php echo htmlspecialchars($filters['search']); ?>" 
-                           class="form-input" placeholder="Employee name or code">
-                </div>
-                
-                <div>
-                    <label for="loan_type" class="block text-sm font-medium text-gray-700 mb-2">Loan Type</label>
-                    <select name="loan_type" id="loan_type" class="form-select">
-                        <option value="">All Types</option>
-                        <?php foreach ($loan_types as $type): ?>
-                            <option value="<?php echo $type['id']; ?>" 
-                                    <?php echo $filters['loanType'] == $type['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($type['name']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select name="status" id="status" class="form-select">
-                        <option value="">All Status</option>
-                        <option value="active" <?php echo $filters['status'] === 'active' ? 'selected' : ''; ?>>Active</option>
-                        <option value="closed" <?php echo $filters['status'] === 'closed' ? 'selected' : ''; ?>>Closed</option>
-                        <option value="defaulted" <?php echo $filters['status'] === 'defaulted' ? 'selected' : ''; ?>>Defaulted</option>
-                    </select>
-                </div>
-                
-                <div class="flex items-end">
-                    <button type="submit" class="w-full btn btn-primary">
-                        <i class="fas fa-filter mr-2"></i>
-                        Filter
-                    </button>
-                </div>
-            </form>
-        </div>
+    <!-- Filter Tabs -->
+    <div class="mb-6">
+        <nav class="flex space-x-8">
+            <a href="/loans?status=active" 
+               class="<?php echo $status_filter === 'active' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'; ?> whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                Active Loans
+            </a>
+            <a href="/loans?status=closed" 
+               class="<?php echo $status_filter === 'closed' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'; ?> whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                Closed Loans
+            </a>
+            <a href="/loans?status=defaulted" 
+               class="<?php echo $status_filter === 'defaulted' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'; ?> whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                Defaulted Loans
+            </a>
+        </nav>
     </div>
 
     <!-- Loans List -->
@@ -76,10 +51,10 @@ include __DIR__ . '/../layout/header.php';
                             Loan Type
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Loan Amount
+                            Amount
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            EMI Amount
+                            EMI
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Outstanding
@@ -135,12 +110,9 @@ include __DIR__ . '/../layout/header.php';
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <?php if ($loan['status'] === 'active'): ?>
-                                            <a href="/loans/<?php echo $loan['id']; ?>/edit" class="text-indigo-600 hover:text-indigo-900" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                            <a href="/loans/<?php echo $loan['id']; ?>/payment" class="text-green-600 hover:text-green-900" title="Record Payment">
+                                                <i class="fas fa-money-bill"></i>
                                             </a>
-                                            <button onclick="closeLoan(<?php echo $loan['id']; ?>)" class="text-orange-600 hover:text-orange-900" title="Close Loan">
-                                                <i class="fas fa-times-circle"></i>
-                                            </button>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -152,7 +124,7 @@ include __DIR__ . '/../layout/header.php';
                                 <div class="text-gray-500">
                                     <i class="fas fa-hand-holding-usd text-4xl mb-4"></i>
                                     <p class="text-lg font-medium">No loans found</p>
-                                    <p class="text-sm">Start by adding employee loans</p>
+                                    <p class="text-sm">Start by adding your first loan</p>
                                     <a href="/loans/create" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200">
                                         <i class="fas fa-plus mr-2"></i>
                                         Add Loan
@@ -164,85 +136,35 @@ include __DIR__ . '/../layout/header.php';
                 </tbody>
             </table>
         </div>
+        
+        <!-- Pagination -->
+        <?php if (!empty($pagination) && $pagination['total_pages'] > 1): ?>
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <?php if ($pagination['has_previous']): ?>
+                        <a href="?page=<?php echo $pagination['current_page'] - 1; ?>&status=<?php echo $status_filter; ?>" 
+                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </a>
+                    <?php endif; ?>
+                    <?php if ($pagination['has_next']): ?>
+                        <a href="?page=<?php echo $pagination['current_page'] + 1; ?>&status=<?php echo $status_filter; ?>" 
+                           class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing page <span class="font-medium"><?php echo $pagination['current_page']; ?></span> of 
+                            <span class="font-medium"><?php echo $pagination['total_pages']; ?></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
-
-<!-- Close Loan Modal -->
-<div id="close-loan-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Close Loan</h3>
-            <form id="close-loan-form">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                <input type="hidden" name="loan_id" id="close_loan_id">
-                
-                <div class="mb-4">
-                    <label for="closure_amount" class="block text-sm font-medium text-gray-700 mb-2">Closure Amount *</label>
-                    <input type="number" name="closure_amount" id="closure_amount" required
-                           class="form-input" step="0.01" placeholder="0.00">
-                </div>
-                
-                <div class="mb-4">
-                    <label for="closure_date" class="block text-sm font-medium text-gray-700 mb-2">Closure Date *</label>
-                    <input type="date" name="closure_date" id="closure_date" required
-                           value="<?php echo date('Y-m-d'); ?>" class="form-input">
-                </div>
-                
-                <div class="mb-6">
-                    <label for="remarks" class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
-                    <textarea name="remarks" id="closure_remarks" rows="3" class="form-textarea" 
-                              placeholder="Reason for closure"></textarea>
-                </div>
-                
-                <div class="flex items-center justify-end space-x-4">
-                    <button type="button" onclick="closeModal()" class="btn btn-outline">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Close Loan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-function closeLoan(loanId) {
-    document.getElementById('close_loan_id').value = loanId;
-    document.getElementById('close-loan-modal').classList.remove('hidden');
-}
-
-function closeModal() {
-    document.getElementById('close-loan-modal').classList.add('hidden');
-}
-
-// Close loan form submission
-document.getElementById('close-loan-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const loanId = formData.get('loan_id');
-    
-    showLoading();
-    
-    fetch(`/loans/${loanId}/close`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideLoading();
-        if (data.success) {
-            showMessage(data.message, 'success');
-            closeModal();
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showMessage(data.message, 'error');
-        }
-    })
-    .catch(error => {
-        hideLoading();
-        console.error('Error:', error);
-        showMessage('An error occurred while closing the loan', 'error');
-    });
-});
-</script>
 
 <?php include __DIR__ . '/../layout/footer.php'; ?>

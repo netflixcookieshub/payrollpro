@@ -6,6 +6,7 @@
     <title><?php echo $title ?? 'Payroll Management System'; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/public/css/formula-editor.css" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -56,6 +57,11 @@
                             Payroll
                         </a>
                         
+                        <a href="/reports" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/reports') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-chart-bar mr-2"></i>
+                            Reports
+                        </a>
+                        
                         <a href="/attendance" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/attendance') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             <i class="fas fa-calendar-check mr-2"></i>
                             Attendance
@@ -66,9 +72,9 @@
                             Loans
                         </a>
                         
-                        <a href="/reports" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/reports') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            <i class="fas fa-chart-bar mr-2"></i>
-                            Reports
+                        <a href="/formula-editor" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/formula-editor') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-code mr-2"></i>
+                            Formulas
                         </a>
                         <?php endif; ?>
                         
@@ -88,9 +94,10 @@
                                     <a href="/loan-types" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Loan Types</a>
                                     <a href="/leave-types" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Leave Types</a>
                                     <a href="/holidays" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Holidays</a>
-                                    <div class="border-t border-gray-100"></div>
-                                    <a href="/tax/slabs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Tax Slabs</a>
-                                    <a href="/tax/calculator" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Tax Calculator</a>
+                                    <?php if (isset($_SESSION['permissions']) && (str_contains($_SESSION['permissions'], 'users') || $_SESSION['permissions'] === 'all')): ?>
+                                        <div class="border-t border-gray-100"></div>
+                                        <a href="/users" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">User Management</a>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -150,6 +157,13 @@
         function toggleDropdown(id) {
             const dropdown = document.getElementById(id);
             dropdown.classList.toggle('hidden');
+            
+            // Close other dropdowns
+            document.querySelectorAll('[id$="-dropdown"]').forEach(otherDropdown => {
+                if (otherDropdown.id !== id) {
+                    otherDropdown.classList.add('hidden');
+                }
+            });
         }
         
         // Close dropdowns when clicking outside
@@ -160,7 +174,11 @@
                     dropdown.classList.add('hidden');
                 }
             });
+            
+            // Close user menu when clicking outside
+            const userMenu = document.getElementById('user-menu');
+            if (userMenu && !userMenu.closest('.relative').contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
         });
     </script>
-</body>
-</html>

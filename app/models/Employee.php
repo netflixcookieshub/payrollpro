@@ -191,6 +191,7 @@ class Employee extends Model {
         $sql = "SELECT d.name, COUNT(e.id) as count 
                 FROM departments d 
                 LEFT JOIN employees e ON d.id = e.department_id AND e.status = 'active'
+                WHERE d.status = 'active'
                 GROUP BY d.id, d.name";
         $stats['departments'] = $this->db->fetchAll($sql);
         
@@ -201,5 +202,21 @@ class Employee extends Model {
         );
         
         return $stats;
+    }
+    
+    public function getEmployeesByStatus($status = 'active') {
+        return $this->findAll('status = :status', ['status' => $status], 'first_name ASC');
+    }
+    
+    public function getEmployeeCount($departmentId = null, $status = 'active') {
+        $conditions = 'status = :status';
+        $params = ['status' => $status];
+        
+        if ($departmentId) {
+            $conditions .= ' AND department_id = :dept_id';
+            $params['dept_id'] = $departmentId;
+        }
+        
+        return $this->count($conditions, $params);
     }
 }
