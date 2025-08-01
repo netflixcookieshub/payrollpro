@@ -86,12 +86,22 @@
                             <i class="fas fa-code mr-2"></i>
                             Formulas
                         </a>
+                        
+                        <a href="/workflow" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/workflow') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-tasks mr-2"></i>
+                            Approvals
+                        </a>
                         <?php endif; ?>
                         
                         <?php if (isset($_SESSION['permissions']) && (str_contains($_SESSION['permissions'], 'admin') || $_SESSION['permissions'] === 'all')): ?>
                         <a href="/integrations" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/integrations') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             <i class="fas fa-plug mr-2"></i>
                             Integrations
+                        </a>
+                        
+                        <a href="/system" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/system') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-server mr-2"></i>
+                            System
                         </a>
                         <?php endif; ?>
                         

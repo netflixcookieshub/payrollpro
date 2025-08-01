@@ -234,6 +234,32 @@ $router->addRoute('GET', '/api/current-period', 'Api', 'currentPeriod');
 $router->addRoute('GET', '/api/employee-search', 'Api', 'employeeSearch');
 $router->addRoute('GET', '/api/salary-calculator', 'Api', 'salaryCalculator');
 
+$router->addRoute('GET', '/workflow', 'Workflow', 'index');
+$router->addRoute('POST', '/workflow/approve', 'Workflow', 'approve');
+$router->addRoute('POST', '/workflow/reject', 'Workflow', 'reject');
+
+// System administration routes
+$router->addRoute('GET', '/system', 'System', 'dashboard');
+$router->addRoute('GET', '/system/backup-manager', 'System', 'backupManager');
+$router->addRoute('GET', '/system/security', 'System', 'securityDashboard');
+$router->addRoute('POST', '/system/create-backup', 'System', 'createBackup');
+$router->addRoute('POST', '/system/restore-backup', 'System', 'restoreBackup');
+$router->addRoute('POST', '/system/cleanup-backups', 'System', 'cleanupBackups');
+$router->addRoute('POST', '/system/block-ip', 'System', 'blockIP');
+$router->addRoute('POST', '/system/unblock-ip', 'System', 'unblockIP');
+$router->addRoute('GET', '/system/health', 'System', 'systemHealth');
+$router->addRoute('POST', '/system/maintenance', 'System', 'systemMaintenance');
+$router->addRoute('GET', '/system/export-security-logs', 'System', 'exportSecurityLogs');
+
+// Advanced reporting routes
+$router->addRoute('GET', '/reports/analytics', 'AdvancedReport', 'dashboard');
+$router->addRoute('GET', '/reports/salary-trends', 'AdvancedReport', 'salaryTrends');
+$router->addRoute('GET', '/reports/cost-analysis', 'AdvancedReport', 'costAnalysis');
+$router->addRoute('POST', '/reports/cost-analysis', 'AdvancedReport', 'costAnalysis');
+$router->addRoute('GET', '/reports/compliance', 'AdvancedReport', 'complianceReport');
+$router->addRoute('GET', '/reports/predictive', 'AdvancedReport', 'predictiveAnalytics');
+$router->addRoute('GET', '/reports/export-analytics', 'AdvancedReport', 'exportAnalytics');
+
 // Static file serving (for development)
 $requestUri = $_SERVER['REQUEST_URI'];
 if (preg_match('/\.(?:png|jpg|jpeg|gif|css|js|ico|svg)$/', $requestUri)) {
