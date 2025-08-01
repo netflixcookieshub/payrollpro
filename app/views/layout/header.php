@@ -6,6 +6,7 @@
     <title><?php echo $title ?? 'Payroll Management System'; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/public/css/formula-editor.css" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -60,6 +61,48 @@
                             <i class="fas fa-chart-bar mr-2"></i>
                             Reports
                         </a>
+                        
+                        <a href="/attendance" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/attendance') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-calendar-check mr-2"></i>
+                            Attendance
+                        </a>
+                        
+                        <a href="/loans" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/loans') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-hand-holding-usd mr-2"></i>
+                            Loans
+                        </a>
+                        
+                        <a href="/payroll/arrears" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/payroll/arrears') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-money-bill-wave mr-2"></i>
+                            Arrears
+                        </a>
+                        
+                        <a href="/payroll/bulk-process" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/payroll/bulk-process') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-tasks mr-2"></i>
+                            Bulk Process
+                        </a>
+                        
+                        <a href="/formula-editor" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/formula-editor') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-code mr-2"></i>
+                            Formulas
+                        </a>
+                        
+                        <a href="/workflow" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/workflow') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-tasks mr-2"></i>
+                            Approvals
+                        </a>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($_SESSION['permissions']) && (str_contains($_SESSION['permissions'], 'admin') || $_SESSION['permissions'] === 'all')): ?>
+                        <a href="/integrations" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/integrations') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-plug mr-2"></i>
+                            Integrations
+                        </a>
+                        
+                        <a href="/system" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/system') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-server mr-2"></i>
+                            System
+                        </a>
                         <?php endif; ?>
                         
                         <!-- Masters Dropdown -->
@@ -78,6 +121,10 @@
                                     <a href="/loan-types" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Loan Types</a>
                                     <a href="/leave-types" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Leave Types</a>
                                     <a href="/holidays" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Holidays</a>
+                                    <?php if (isset($_SESSION['permissions']) && (str_contains($_SESSION['permissions'], 'users') || $_SESSION['permissions'] === 'all')): ?>
+                                        <div class="border-t border-gray-100"></div>
+                                        <a href="/users" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">User Management</a>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -125,6 +172,8 @@
                 <a href="/dashboard" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Dashboard</a>
                 <a href="/employees" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Employees</a>
                 <a href="/payroll" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Payroll</a>
+                <a href="/attendance" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Attendance</a>
+                <a href="/loans" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Loans</a>
                 <a href="/reports" class="block text-gray-600 hover:text-gray-900 px-2 py-1 text-base font-medium">Reports</a>
             </div>
         </div>
@@ -135,6 +184,13 @@
         function toggleDropdown(id) {
             const dropdown = document.getElementById(id);
             dropdown.classList.toggle('hidden');
+            
+            // Close other dropdowns
+            document.querySelectorAll('[id$="-dropdown"]').forEach(otherDropdown => {
+                if (otherDropdown.id !== id) {
+                    otherDropdown.classList.add('hidden');
+                }
+            });
         }
         
         // Close dropdowns when clicking outside
@@ -145,7 +201,11 @@
                     dropdown.classList.add('hidden');
                 }
             });
+            
+            // Close user menu when clicking outside
+            const userMenu = document.getElementById('user-menu');
+            if (userMenu && !userMenu.closest('.relative').contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
         });
     </script>
-</body>
-</html>

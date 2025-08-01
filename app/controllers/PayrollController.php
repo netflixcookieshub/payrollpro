@@ -7,6 +7,13 @@ require_once __DIR__ . '/../core/Controller.php';
 
 class PayrollController extends Controller {
     
+    private $payrollProcessor;
+    
+    public function __construct() {
+        parent::__construct();
+        $this->payrollProcessor = $this->loadModel('PayrollProcessor');
+    }
+    
     public function index() {
         $this->checkAuth();
         $this->checkPermission('payroll');
@@ -49,7 +56,7 @@ class PayrollController extends Controller {
         $this->checkPermission('payroll');
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->handleProcessPayroll();
+            $this->handleAdvancedProcessPayroll();
         } else {
             $this->showProcessPage();
         }
@@ -218,6 +225,101 @@ class PayrollController extends Controller {
         }
     }
     
+    public function reprocess() {
+        $this->checkAuth();
+        $this->checkPermission('payroll');
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $periodId = $input['period_id'] ?? '';
+            $employeeIds = $input['employee_ids'] ?? [];
+            $options = [
+                'include_arrears' => $input['include_arrears'] ?? false,
+                'calculate_tds' => $input['calculate_tds'] ?? true,
+                'process_loans' => $input['process_loans'] ?? true,
+                'include_variable_pay' => $input['include_variable_pay'] ?? false
+            ];
+            
+            if (empty($periodId) || empty($employeeIds)) {
+                $this->jsonResponse(['success' => false, 'message' => 'Period and employees are required'], 400);
+                return;
+            }
+            
+            $result = $this->payrollProcessor->reprocessPayroll($periodId, $employeeIds, $options);
+            
+            if ($result['success']) {
+                $this->logActivity('reprocess_payroll', 'payroll_transactions', $periodId);
+                $this->jsonResponse([
+                    'success' => true,
+                    'message' => "Payroll reprocessed for {$result['processed']} employees"
+                ]);
+            } else {
+                $this->jsonResponse(['success' => false, 'message' => $result['message']], 500);
+            }
+        }
+    }
+    
+    public function calculateSalary() {
+        $this->checkAuth();
+        $this->checkPermission('payroll');
+        
+        $employeeId = $_GET['employee_id'] ?? '';
+        $periodId = $_GET['period_id'] ?? '';
+        
+        if (empty($employeeId) || empty($periodId)) {
+            $this->jsonResponse(['success' => false, 'message' => 'Employee and period are required'], 400);
+            return;
+        }
+        
+        // Get employee and period details
+        $employee = $this->db->fetch("SELECT * FROM employees WHERE id = :id", ['id' => $employeeId]);
+        $period = $this->db->fetch("SELECT * FROM payroll_periods WHERE id = :id", ['id' => $periodId]);
+        
+        if (!$employee || !$period) {
+            $this->jsonResponse(['success' => false, 'message' => 'Invalid employee or period'], 400);
+            return;
+        }
+        
+        // Calculate salary preview
+        $result = $this->payrollProcessor->calculateSalaryPreview($employee, $period);
+        
+        $this->jsonResponse(['success' => true, 'calculation' => $result]);
+    }
+    
+    public function advancedCalculator() {
+        $this->checkAuth();
+        $this->checkPermission('payroll');
+        
+        $employees = $this->db->fetchAll(
+            "SELECT e.id, e.emp_code, CONCAT(e.first_name, ' ', e.last_name) as name, 
+                    e.join_date, ss.amount as basic_salary
+             FROM employees e
+             LEFT JOIN salary_structures ss ON e.id = ss.employee_id 
+                 AND ss.component_id = 1 AND ss.end_date IS NULL
+             WHERE e.status = 'active'
+             ORDER BY e.emp_code ASC"
+        );
+        
+        $periods = $this->db->fetchAll(
+            "SELECT * FROM payroll_periods ORDER BY start_date DESC LIMIT 12"
+        );
+        
+        $this->loadView('payroll/advanced-calculator', [
+            'employees' => $employees,
+            'periods' => $periods,
+            'csrf_token' => $this->generateCSRFToken()
+        ]);
+    }
+    
+    public function salaryCalculator() {
+        $this->checkAuth();
+        $this->checkPermission('payroll');
+        
+        $this->loadView('payroll/salary-calculator', [
+            'csrf_token' => $this->generateCSRFToken()
+        ]);
+    }
+    
     private function handleCreatePeriod() {
         $data = $this->sanitizeInput($_POST);
         $csrfToken = $_POST['csrf_token'] ?? '';
@@ -264,9 +366,16 @@ class PayrollController extends Controller {
         }
     }
     
-    private function handleProcessPayroll() {
+    private function handleAdvancedProcessPayroll() {
+        $input = json_decode(file_get_contents('php://input'), true);
         $periodId = $_POST['period_id'] ?? '';
         $employeeIds = $_POST['employee_ids'] ?? [];
+        $options = [
+            'include_arrears' => $input['include_arrears'] ?? false,
+            'calculate_tds' => $input['calculate_tds'] ?? true,
+            'process_loans' => $input['process_loans'] ?? true,
+            'include_variable_pay' => $input['include_variable_pay'] ?? false
+        ];
         $csrfToken = $_POST['csrf_token'] ?? '';
         
         if (!$this->validateCSRFToken($csrfToken)) {
@@ -279,14 +388,16 @@ class PayrollController extends Controller {
             return;
         }
         
-        $payrollModel = $this->loadModel('Payroll');
-        $result = $payrollModel->processPayroll($periodId, $employeeIds);
+        $result = $this->payrollProcessor->processAdvancedPayroll($periodId, $employeeIds, $options);
         
         if ($result['success']) {
             $this->logActivity('process_payroll', 'payroll_transactions', $periodId);
             $this->jsonResponse([
                 'success' => true, 
-                'message' => "Payroll processed for {$result['processed']} employees"
+                'message' => "Payroll processed for {$result['processed']} employees",
+                'processed' => $result['processed'],
+                'total' => $result['total_employees'],
+                'errors' => $result['errors']
             ]);
         } else {
             $this->jsonResponse(['success' => false, 'message' => $result['message']], 500);

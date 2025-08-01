@@ -79,6 +79,10 @@ include __DIR__ . '/../layout/header.php';
                             <input type="checkbox" name="process_loans" class="form-checkbox" checked>
                             <span class="ml-2 text-sm text-gray-700">Process Loan EMIs</span>
                         </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="include_variable_pay" class="form-checkbox">
+                            <span class="ml-2 text-sm text-gray-700">Include Variable Pay</span>
+                        </label>
                     </div>
                     
                     <button type="button" onclick="startProcessing()" class="btn btn-primary">
@@ -87,6 +91,50 @@ include __DIR__ . '/../layout/header.php';
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+    <!-- Advanced Processing Options -->
+    <div id="advanced-options" class="bg-white shadow-sm rounded-lg border border-gray-200 mb-6 hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Advanced Processing Options</h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-md font-semibold text-gray-900 mb-3">Calculation Options</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="apply_pro_rata" class="form-checkbox" checked>
+                            <span class="ml-2 text-sm text-gray-700">Apply Pro-rata for New/Leaving Employees</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="calculate_lop" class="form-checkbox" checked>
+                            <span class="ml-2 text-sm text-gray-700">Calculate Loss of Pay (LOP)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="use_formulas" class="form-checkbox" checked>
+                            <span class="ml-2 text-sm text-gray-700">Use Component Formulas</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold text-gray-900 mb-3">Processing Mode</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="processing_type" value="fresh" class="form-radio" checked>
+                            <span class="ml-2 text-sm text-gray-700">Fresh Processing</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="processing_type" value="reprocess" class="form-radio">
+                            <span class="ml-2 text-sm text-gray-700">Reprocess (Delete & Recalculate)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="processing_type" value="supplement" class="form-radio">
+                            <span class="ml-2 text-sm text-gray-700">Supplementary Processing</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -115,6 +163,18 @@ include __DIR__ . '/../layout/header.php';
                             <p class="text-xs text-gray-500">
                                 <?php echo htmlspecialchars($employee['emp_code']); ?>
                             </p>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Include Arrears:</span>
+                            <span id="summary-arrears" class="font-medium">No</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Calculate TDS:</span>
+                            <span id="summary-tds" class="font-medium">Yes</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Process Loans:</span>
+                            <span id="summary-loans" class="font-medium">Yes</span>
                         </div>
                     </label>
                 <?php endforeach; ?>
@@ -200,15 +260,25 @@ function startProcessing() {
     const form = document.getElementById('payroll-process-form');
     const formData = new FormData(form);
     
+    // Get all form data including checkboxes
+    const data = {
+        period_id: formData.get('period_id'),
+        department_filter: formData.get('department_filter'),
+        processing_mode: formData.get('processing_mode'),
+        include_arrears: formData.has('include_arrears'),
+        calculate_tds: formData.has('calculate_tds'),
+        process_loans: formData.has('process_loans'),
+        include_variable_pay: formData.has('include_variable_pay'),
+        csrf_token: formData.get('csrf_token')
+    };
+    
     // Validate form
-    const periodId = formData.get('period_id');
-    if (!periodId) {
+    if (!data.period_id) {
         showMessage('Please select a payroll period', 'error');
         return;
     }
     
-    const processingMode = formData.get('processing_mode');
-    if (processingMode === 'selected') {
+    if (data.processing_mode === 'selected') {
         const selectedEmployees = document.querySelectorAll('.employee-checkbox:checked');
         if (selectedEmployees.length === 0) {
             showMessage('Please select at least one employee', 'error');
@@ -216,28 +286,19 @@ function startProcessing() {
         }
         
         // Add selected employee IDs to form data
+        data.employee_ids = [];
         selectedEmployees.forEach(checkbox => {
-            formData.append('employee_ids[]', checkbox.value);
+            data.employee_ids.push(checkbox.value);
         });
     }
     
-    if (confirm('Are you sure you want to start payroll processing? This action cannot be undone.')) {
+    const confirmMessage = data.processing_mode === 'reprocess' ? 
+        'Are you sure you want to reprocess payroll? This will delete existing data and recalculate.' :
+        'Are you sure you want to start payroll processing?';
+        
+    if (confirm(confirmMessage)) {
         isProcessing = true;
         showProcessingStatus();
-        
-        // Convert FormData to JSON
-        const data = {};
-        for (let [key, value] of formData.entries()) {
-            if (data[key]) {
-                if (Array.isArray(data[key])) {
-                    data[key].push(value);
-                } else {
-                    data[key] = [data[key], value];
-                }
-            } else {
-                data[key] = value;
-            }
-        }
         
         // Start processing
         fetch('/payroll/process', {
@@ -251,10 +312,18 @@ function startProcessing() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                updateProcessingLog('✓ Payroll processing completed successfully');
-                updateProcessingLog(`✓ Processed ${data.processed || 0} employees`);
+                updateProcessingLog(`✓ Payroll processing completed successfully`);
+                updateProcessingLog(`✓ Processed ${data.processed || 0} out of ${data.total || 0} employees`);
+                
+                if (data.errors && data.errors.length > 0) {
+                    updateProcessingLog(`⚠ ${data.errors.length} errors occurred:`);
+                    data.errors.forEach(error => {
+                        updateProcessingLog(`  • ${error}`);
+                    });
+                }
+                
                 updateProgress(100);
-                updateProcessingSummary(`Processing completed: ${data.processed || 0} employees processed`);
+                updateProcessingSummary(`Processing completed: ${data.processed || 0}/${data.total || 0} employees processed`);
                 showMessage('Payroll processing completed successfully', 'success');
             } else {
                 updateProcessingLog('✗ Payroll processing failed: ' + data.message);
@@ -315,13 +384,18 @@ function updateProcessingSummary(message) {
 function simulateProgress() {
     let progress = 0;
     const steps = [
-        { progress: 10, message: 'Validating employee data...' },
-        { progress: 25, message: 'Calculating basic salary components...' },
-        { progress: 40, message: 'Processing deductions...' },
-        { progress: 55, message: 'Calculating TDS...' },
-        { progress: 70, message: 'Processing loan EMIs...' },
-        { progress: 85, message: 'Generating payroll transactions...' },
-        { progress: 95, message: 'Finalizing calculations...' }
+        { progress: 5, message: 'Initializing payroll processing...' },
+        { progress: 15, message: 'Validating employee data and salary structures...' },
+        { progress: 25, message: 'Calculating attendance and LOP...' },
+        { progress: 35, message: 'Processing basic salary components...' },
+        { progress: 45, message: 'Evaluating component formulas...' },
+        { progress: 55, message: 'Applying pro-rata calculations...' },
+        { progress: 65, message: 'Calculating statutory deductions (PF, ESI, PT)...' },
+        { progress: 75, message: 'Computing TDS with tax slabs...' },
+        { progress: 85, message: 'Processing loan EMI deductions...' },
+        { progress: 90, message: 'Processing arrears and variable pay...' },
+        { progress: 95, message: 'Generating payroll transactions...' },
+        { progress: 100, message: 'Finalizing payroll calculations...' }
     ];
     
     let stepIndex = 0;
@@ -338,7 +412,34 @@ function simulateProgress() {
         updateProcessingSummary(step.message);
         
         stepIndex++;
-    }, 1000);
+    }, 800);
+}
+
+// Update processing summary when options change
+document.addEventListener('change', function(e) {
+    if (e.target.matches('input[name="processing_mode"]')) {
+        document.getElementById('summary-mode').textContent = 
+            e.target.value === 'all' ? 'All Employees' :
+            e.target.value === 'selected' ? 'Selected Employees' : 'New Employees Only';
+    }
+    
+    if (e.target.matches('input[name="include_arrears"]')) {
+        document.getElementById('summary-arrears').textContent = e.target.checked ? 'Yes' : 'No';
+    }
+    
+    if (e.target.matches('input[name="calculate_tds"]')) {
+        document.getElementById('summary-tds').textContent = e.target.checked ? 'Yes' : 'No';
+    }
+    
+    if (e.target.matches('input[name="process_loans"]')) {
+        document.getElementById('summary-loans').textContent = e.target.checked ? 'Yes' : 'No';
+    }
+});
+
+// Show advanced options toggle
+function toggleAdvancedOptions() {
+    const advancedOptions = document.getElementById('advanced-options');
+    advancedOptions.classList.toggle('hidden');
 }
 
 function cancelProcessing() {

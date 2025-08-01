@@ -399,4 +399,31 @@ class Payroll extends Model {
             ['fy' => $financialYear]
         );
     }
+    
+    public function getPayrollStatus($periodId) {
+        $sql = "SELECT 
+                    COUNT(DISTINCT pt.employee_id) as processed_employees,
+                    COUNT(DISTINCT e.id) as total_employees,
+                    SUM(CASE WHEN sc.type = 'earning' THEN pt.amount ELSE 0 END) as total_earnings,
+                    SUM(CASE WHEN sc.type = 'deduction' THEN ABS(pt.amount) ELSE 0 END) as total_deductions
+                FROM employees e
+                LEFT JOIN payroll_transactions pt ON e.id = pt.employee_id AND pt.period_id = :period_id
+                LEFT JOIN salary_components sc ON pt.component_id = sc.id
+                WHERE e.status = 'active'";
+        
+        return $this->db->fetch($sql, ['period_id' => $periodId]);
+    }
+    
+    public function deletePayrollTransactions($periodId, $employeeIds = []) {
+        $conditions = 'period_id = :period_id';
+        $params = ['period_id' => $periodId];
+        
+        if (!empty($employeeIds)) {
+            $placeholders = implode(',', array_fill(0, count($employeeIds), '?'));
+            $conditions .= " AND employee_id IN ({$placeholders})";
+            $params = array_merge($params, $employeeIds);
+        }
+        
+        return $this->db->delete('payroll_transactions', $conditions, $params);
+    }
 }

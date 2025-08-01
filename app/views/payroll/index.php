@@ -21,6 +21,10 @@ include __DIR__ . '/../layout/header.php';
                 <i class="fas fa-play-circle mr-2"></i>
                 Process Payroll
             </a>
+            <a href="/payroll/salary-calculator" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <i class="fas fa-calculator mr-2"></i>
+                Salary Calculator
+            </a>
         </div>
     </div>
 
@@ -95,6 +99,25 @@ include __DIR__ . '/../layout/header.php';
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-calculator text-purple-600"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">Salary Calculator</h3>
+                    <p class="text-sm text-gray-500">Advanced salary calculations with formulas</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/payroll/salary-calculator" class="text-purple-600 hover:text-purple-800 text-sm font-medium">
+                    Calculate →
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
                     <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                         <i class="fas fa-file-invoice text-green-600"></i>
                     </div>
@@ -114,8 +137,8 @@ include __DIR__ . '/../layout/header.php';
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-bar text-purple-600"></i>
+                    <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-bar text-indigo-600"></i>
                     </div>
                 </div>
                 <div class="ml-4">
@@ -124,7 +147,7 @@ include __DIR__ . '/../layout/header.php';
                 </div>
             </div>
             <div class="mt-4">
-                <a href="/reports" class="text-purple-600 hover:text-purple-800 text-sm font-medium">
+                <a href="/reports" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                     View Reports →
                 </a>
             </div>
