@@ -486,39 +486,34 @@ class PayrollProcessor extends Model {
      * Evaluate formula with component values
      */
     private function evaluateFormula($formula, $componentValues, $employee, $period) {
-        // Replace component codes with actual values
-        $evaluatedFormula = $formula;
+        // Get all salary components for the employee
+        $components = $this->getEmployeeSalaryStructure($employee['id'], $period['start_date']);
+        $componentValues = [];
         
+        foreach ($components as $comp) {
+            $componentValues[$comp['component_code']] = $comp['amount'];
+        }
+        
+        // Replace component codes with values in formula
+        $evaluatedFormula = $formula;
         foreach ($componentValues as $code => $value) {
             $evaluatedFormula = str_replace($code, $value, $evaluatedFormula);
         }
         
-        // Replace special variables
-        $evaluatedFormula = str_replace('GROSS', array_sum($componentValues), $evaluatedFormula);
-        $evaluatedFormula = str_replace('DAYS_IN_MONTH', date('t', strtotime($period['start_date'])), $evaluatedFormula);
-        
-        // Safe evaluation
-        return $this->safeEvaluate($evaluatedFormula);
+        // Evaluate mathematical expression safely
+        return $this->evaluateMathExpression($evaluatedFormula);
     }
     
     /**
-     * Safe mathematical expression evaluation
+     * Safely evaluate mathematical expression
      */
-    private function safeEvaluate($expression) {
-        // Remove any non-mathematical characters
+    private function evaluateMathExpression($expression) {
+        // Simple and safe evaluation for basic arithmetic
         $expression = preg_replace('/[^0-9+\-*\/.() ]/', '', $expression);
         
-        // Check for division by zero
-        if (strpos($expression, '/0') !== false) {
-            return 0;
-        }
-        
         try {
-            // Use eval carefully with sanitized input
-            $result = eval("return $expression;");
-            return is_numeric($result) ? round($result, 2) : 0;
+            return eval("return $expression;");
         } catch (Exception $e) {
-            error_log("Formula evaluation error: $expression - " . $e->getMessage());
             return 0;
         }
     }
@@ -633,7 +628,6 @@ class PayrollProcessor extends Model {
      */
     private function isEMIDueInPeriod($loan, $period) {
         $emiDate = new DateTime($loan['first_emi_date']);
-        $periodStart = new DateTime($period['start_date']);
         $periodEnd = new DateTime($period['end_date']);
         
         // Calculate next EMI date based on disbursement
@@ -812,8 +806,7 @@ class PayrollProcessor extends Model {
                     COUNT(DISTINCT pt.employee_id) as total_employees,
                     SUM(CASE WHEN sc.type = 'earning' THEN pt.amount ELSE 0 END) as total_earnings,
                     SUM(CASE WHEN sc.type = 'deduction' THEN ABS(pt.amount) ELSE 0 END) as total_deductions,
-                    SUM(CASE WHEN sc.type = 'earning' THEN pt.amount ELSE pt.amount END) as net_payable,
-                    AVG(CASE WHEN sc.type = 'earning' THEN pt.amount ELSE pt.amount END) as avg_salary
+                    SUM(CASE WHEN sc.type = 'earning' THEN pt.amount ELSE pt.amount END) as net_payable
                 FROM payroll_transactions pt
                 JOIN salary_components sc ON pt.component_id = sc.id
                 JOIN employees e ON pt.employee_id = e.id

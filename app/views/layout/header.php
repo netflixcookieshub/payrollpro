@@ -72,6 +72,16 @@
                             Loans
                         </a>
                         
+                        <a href="/payroll/arrears" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/payroll/arrears') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-money-bill-wave mr-2"></i>
+                            Arrears
+                        </a>
+                        
+                        <a href="/payroll/bulk-process" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/payroll/bulk-process') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <i class="fas fa-tasks mr-2"></i>
+                            Bulk Process
+                        </a>
+                        
                         <a href="/formula-editor" class="nav-link <?php echo str_contains($_SERVER['REQUEST_URI'], '/formula-editor') ? 'border-primary-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'; ?> inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             <i class="fas fa-code mr-2"></i>
                             Formulas

@@ -129,6 +129,14 @@ $router->addRoute('POST', '/payroll/reject-arrears', 'Payroll', 'rejectArrears')
 $router->addRoute('POST', '/payroll/bulk-approve-arrears', 'Payroll', 'bulkApproveArrears');
 $router->addRoute('GET', '/payroll/variable-pay', 'Payroll', 'variablePay');
 $router->addRoute('POST', '/payroll/create-variable-pay', 'Payroll', 'createVariablePay');
+$router->addRoute('POST', '/payroll/approve-variable-pay', 'Payroll', 'approveVariablePay');
+$router->addRoute('POST', '/payroll/reject-variable-pay', 'Payroll', 'rejectVariablePay');
+$router->addRoute('POST', '/payroll/bulk-approve-variable-pay', 'Payroll', 'bulkApproveVariablePay');
+$router->addRoute('GET', '/payroll/bulk-process', 'Payroll', 'bulkProcess');
+$router->addRoute('POST', '/payroll/bulk-process', 'Payroll', 'bulkProcess');
+$router->addRoute('GET', '/payroll/export-payslips', 'Payroll', 'exportPayslips');
+$router->addRoute('GET', '/payroll/performance-bonus', 'Payroll', 'performanceBonus');
+$router->addRoute('POST', '/payroll/calculate-performance-bonus', 'Payroll', 'calculatePerformanceBonus');
 
 // Master data routes
 $router->addRoute('GET', '/departments', 'Department', 'index');
